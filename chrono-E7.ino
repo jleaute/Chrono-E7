@@ -42,7 +42,7 @@ bool moteurOn = false;
 bool signalErr = false;
 
 // Variables pour le buzzer
-const int brocheBuzzer = 9;                             // Pin où le buzzer est connecté
+const int brocheBuzzer = 9;                             // Broche où le buzzer est connecté
 unsigned long precedMillisBuzzer = 0;                   // Variable pour stocker la dernière fois où le buzzer a changé d'état
 const long intervalOn = 70;                             // Intervalle pendant lequel le buzzer sonne (en millisecondes)
 const long intervalOff = 2000;                          // Intervalle pendant lequel le buzzer est éteint (en millisecondes)
