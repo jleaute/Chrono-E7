@@ -49,8 +49,8 @@ const long intervalOff = 2000;                          // Intervalle pendant le
 bool etatBuzzer = false;                                // État actuel du buzzer
 
 // Variables pour la tension batterie
-const float tensionMax = 4.1;                           // Tension maxi batterie chargée (100%)
-const float tensionMin = 3.0;                           // Tension mini batterie déchargée(0%)
+const float tensionMax = 4.03;                          // Tension maxi batterie chargée (100%)
+const float tensionMin = 3.55;                          // Tension mini batterie déchargée(0%)
 
 void setup() {
   lcd.begin(16, 2);                                     // Initialise l'écran LCD avec 16 colonnes et 2 lignes
