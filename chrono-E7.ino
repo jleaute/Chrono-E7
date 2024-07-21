@@ -7,7 +7,7 @@ Réglages
 Ligne 20 :      précision du chronomètrage
 Ligne 40 :      seuil de détection de la mise en marche moteur
 lignes 53-54 :  niveau de charge de la batterie
-ligne 63 :      précision de la tension batterie
+ligne 64 :      précision de la tension batterie
 */
 
 #include <LiquidCrystal.h>
