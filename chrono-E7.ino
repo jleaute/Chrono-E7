@@ -4,9 +4,10 @@ Version 1.0 juillet 2024
 jacques.leaute@gmail.com
 
 Réglages
-Ligne 19 : précision du chronomètrage
-Ligne 39 : seuil de détection de la mise en marche moteur
-ligne 52 : mesure du niveau de charge de la batterie
+Ligne 20 :      précision du chronomètrage
+Ligne 40 :      seuil de détection de la mise en marche moteur
+lignes 53-54 :  niveau de charge de la batterie
+ligne 63 :      précision de la tension batterie
 */
 
 #include <LiquidCrystal.h>
@@ -16,7 +17,7 @@ const int brocheBp = 8;                                 // Broche Arduino du bou
 int dernierEtatBp = HIGH;                               // Dernier état connu du bouton
 int etatBp = HIGH;                                      // État actuel du bouton
 
-float precision = 0.9992;                               // Réglage de la précision des 2 chronomètres (+ pour accélérer, - pour ralentir)
+float precision = 1.000000;                             // Réglage de la précision des 2 chronomètres (+ pour accélérer, - pour ralentir)
 
 // Variables du chronometre Tps de vol
 bool marcheTv = false;                                  // Variable pour indiquer si le chronomètre Tps de vol tourne
@@ -36,7 +37,7 @@ int secondesTm = 0;
 const int ppmRx = 10;                                   // Broche Arduino ou le signal PPM du RX est connecte
 unsigned int impulsInit;                                // Duree impulsion initiale
 unsigned int impulsCourant;                             // Duree impulsion courante
-const unsigned int seuil = 70;                          // Seuil de detection de mise en marche du moteur en ms
+const unsigned int seuil = 70;                          // Seuil de detection de mise en marche du moteur (en microsecondes)
 int ecart;                                              // Difference entre duree initiale et duree courante
 bool moteurOn = false;
 bool signalErr = false;
@@ -50,13 +51,18 @@ bool etatBuzzer = false;                                // État actuel du buzze
 
 // Variables pour la tension batterie
 const float tensionMax = 4.03;                          // Tension maxi batterie chargée (100%)
-const float tensionMin = 3.50;                          // Tension mini batterie déchargée(0%)
+const float tensionMin = 3.30;                          // Tension mini batterie déchargée(0%)
 
 void setup() {
   lcd.begin(16, 2);                                     // Initialise l'écran LCD avec 16 colonnes et 2 lignes
 
-  int valeurBrute = analogRead(A0);                     // Acquisition de la tension batterie sur la borne A0. Renvoie une valeur de 0 (0V) à 1023 (5V)
-  float tensionBatterie = valeurBrute * 5.0 / 1023;     // conversion en Volt
+  unsigned long Somme = 0 ;                             // variable pour additionner une série de mesures de tension
+  float tensionBatterie ;                               // Variable tension moyenne de la batterie
+  for(int i = 0 ; i < 100 ; i++) {                      // Boucle de 100 mesues
+  Somme = Somme + analogRead(A0) ;                      // Acquisition de la tension batterie sur la borne A0. Renvoie une valeur de 0 (0V) à 1023 (5.13V)
+  }
+  tensionBatterie = Somme / 100 * 5.13 / 1024 ;         // Moyenne des 100 mesures effectuées. VREF de la carte Arduino = 5.13V
+
   byte pourcentBat = ((tensionBatterie - tensionMin) / (tensionMax - tensionMin)) * 100;   // Calcul du pourcentage de charge
   pourcentBat = constrain(pourcentBat, 0, 100);         // Limitation de la valeur entre 0 et 100%
 
@@ -86,7 +92,7 @@ void setup() {
 void loop() {
   // Acquisition du signal Rx
   impulsCourant = pulseIn(ppmRx, HIGH);                 // Mesure de la largeur de l'impulsion actuelle
-  ecart = impulsCourant - impulsInit;                                                      // Calcul de l'ecart avec la duree initiale
+  ecart = impulsCourant - impulsInit;                   // Calcul de l'ecart avec la duree initiale
   // Comparaison avec la largeur de l'impulsion initiale
   if (impulsCourant > 700 && impulsCourant < 2300) {    // verifie si le signal PPM est valide
     signalErr = false;
@@ -100,7 +106,7 @@ void loop() {
   if (etatBp == LOW && dernierEtatBp == HIGH) {         // Si le bouton vient d'être appuyé (transition HIGH à LOW)
     if (!marcheTv && !arretTv) {                        // Si le chronomètre n'a pas démarré et n'a jamais été arrêté
       marcheTv = true;
-      departTps = millis() * precision;                 // Enregistre le temps de début
+      departTps = millis();                             // Enregistre le temps de début
     } else if (marcheTv) {
       marcheTv = false;                                 // Arrête le chronomètre
       arretTv = true;                                   // Marque le chronomètre comme arrêté
@@ -110,7 +116,7 @@ void loop() {
   dernierEtatBp = etatBp;                               // Mise à jour de l'état du bouton
 
   if (marcheTv) {
-    duree = (millis() * precision) - departTps;         // Calcule le temps écoulé (réglage de la précision du chrono a la ligne 19)
+    duree = (millis() * precision) - departTps;         // Calcule le temps écoulé
     minutesTv = (duree / 60000) % 60;
     secondesTv = (duree / 1000) % 60;
   }
@@ -171,6 +177,6 @@ void loop() {
       }
     }
   }
-  else { lcd.setCursor(7,1); lcd.print("OFF"); }        // Moteur à l'arret
+  else { lcd.setCursor(7,1); lcd.print("OFF"); digitalWrite(brocheBuzzer, LOW); } // Moteur à l'arret, buzzer éteint
   
 }
