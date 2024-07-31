@@ -45,7 +45,7 @@ bool signalErr = false;
 
 // Variables buzzer
 const int brocheBuzzer = 9;                             // Broche où le buzzer est connecté
-unsigned long precedDepartTmBuzzer = 0;                   // Variable pour stocker la dernière fois où le buzzer a changé d'état
+unsigned long precedDepartTmBuzzer = 0;                 // Variable pour stocker la dernière fois où le buzzer a changé d'état
 const long intervalOn = 70;                             // Intervalle pendant lequel le buzzer sonne (en millisecondes)
 const long intervalOff = 2000;                          // Intervalle pendant lequel le buzzer est éteint (en millisecondes)
 bool etatBuzzer = false;                                // État actuel du buzzer
@@ -54,14 +54,16 @@ bool etatBuzzer = false;                                // État actuel du buzze
 const float tensionMax = 4.03;                          // Tension maxi batterie chargée (100%)
 const float tensionMin = 3.30;                          // Tension mini batterie déchargée(0%)
 const float vRef = 5.00;                                // Tension de référence de l'Arduino
+int analogIn = A0;                                      // Assigne la variable de type integer «analogIn» à la broche A0
 long somme = 0;                                         // Variable pour cumuler les mesures de tension batterie
 
 void setup() {
-  for (byte i = 0; i < 50; i++) {                       // Réaliser 50 mesures de tension ...
-    int valeurBrute = analogRead(A0);
+  pinMode(analogIn,INPUT);                              // Initialise le mode INPUT à la broche d'entrée analogique analogIn (A0)
+  for (byte i = 0; i < 100; i++) {                       // Réaliser 100 mesures de tension ...
+    int valeurBrute = analogRead(analogIn);
     somme = somme + valeurBrute;                        // ... et les additionner
   }
-  float tensionBatterie = somme / 50 * vRef / 1024;     // Calculer la tension moyenne de la batterie
+  float tensionBatterie = somme / 100 * vRef / 1024;     // Calculer la tension moyenne de la batterie
   byte pourcentBat = ((tensionBatterie - tensionMin) / (tensionMax - tensionMin)) * 100;   // Calcul du pourcentage de charge
   pourcentBat = constrain(pourcentBat, 0, 100);         // Limitation de la valeur entre 0 et 100%
 
