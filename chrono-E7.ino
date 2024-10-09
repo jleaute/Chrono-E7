@@ -1,6 +1,6 @@
 /*
 Chronomètre semi-automatique pour concours Electro-7
-Version 1.0 juillet 2024
+Version 1.1 octobre 2024
 jacques.leaute@gmail.com
 
 Réglages
@@ -51,26 +51,26 @@ const long intervalOff = 2000;                          // Intervalle pendant le
 bool etatBuzzer = false;                                // État actuel du buzzer
 
 // Variables batterie
-const float tensionMax = 4.03;                          // Tension maxi batterie chargée (100%)
-const float tensionMin = 3.30;                          // Tension mini batterie déchargée(0%)
+const float tensionMax = 4.04;                          // Tension maxi batterie chargée (100%)
+const float tensionMin = 3.54;                          // Tension mini batterie déchargée(0%)
 const float vRef = 5.00;                                // Tension de référence de l'Arduino
 int analogIn = A0;                                      // Assigne la variable de type integer «analogIn» à la broche A0
 long somme = 0;                                         // Variable pour cumuler les mesures de tension batterie
 
 void setup() {
+  lcd.begin(16, 2);                                     // Initialiser l'écran LCD avec 16 colonnes et 2 lignes
+  lcd.print("CHRONO-E7   V1.1");                        // Ecran d'accueil
+  lcd.setCursor(0, 1);
+  lcd.print("Charge bat: ");
+  delay(50);                                            // Attendre la stabilisation du module step-up 3.7V-5V
   pinMode(analogIn,INPUT);                              // Initialise le mode INPUT à la broche d'entrée analogique analogIn (A0)
-  for (byte i = 0; i < 100; i++) {                       // Réaliser 100 mesures de tension ...
+  for (byte i = 0; i < 200; i++) {                      // Réaliser 200 mesures de tension ...
     int valeurBrute = analogRead(analogIn);
     somme = somme + valeurBrute;                        // ... et les additionner
   }
-  float tensionBatterie = somme / 100 * vRef / 1024;     // Calculer la tension moyenne de la batterie
-  byte pourcentBat = ((tensionBatterie - tensionMin) / (tensionMax - tensionMin)) * 100;   // Calcul du pourcentage de charge
-  pourcentBat = constrain(pourcentBat, 0, 100);         // Limitation de la valeur entre 0 et 100%
-
-  lcd.begin(16, 2);                                     // Initialiser l'écran LCD avec 16 colonnes et 2 lignes
-  lcd.print("CHRONO-E7   V1.0");                        // Ecran d'accueil
-  lcd.setCursor(0, 1);
-  lcd.print("Charge bat: ");
+  float tensionBatterie = somme / 200 * vRef / 1024;    // Calculer la tension moyenne de la batterie
+  int pourcentBat = ((tensionBatterie - tensionMin) / (tensionMax - tensionMin)) * 100;   // Calcul du pourcentage de charge
+  pourcentBat = constrain(pourcentBat, 0, 100);         // Limitation de la valeur entre 0 et 100%    
   lcd.print(pourcentBat);
   lcd.print("%");
   delay(1500);                                          // Afficher l'écran d'accueil pendant 1,5 seconde
