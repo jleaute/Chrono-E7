@@ -1,6 +1,6 @@
 /*
 Chronomètre semi-automatique pour concours Electro-7
-Version 1.1 octobre 2024
+Version 1.2 octobre 2024
 jacques.leaute@gmail.com
 
 Réglages
@@ -57,9 +57,22 @@ const float vRef = 5.00;                                // Tension de référenc
 int analogIn = A0;                                      // Assigne la variable de type integer «analogIn» à la broche A0
 long somme = 0;                                         // Variable pour cumuler les mesures de tension batterie
 
+// Variable mode réglages
+bool modeReglages = false;				// Mode réglages. Variable de mémorisation de l'entrée en mode réglages
+
 void setup() {
   lcd.begin(16, 2);                                     // Initialiser l'écran LCD avec 16 colonnes et 2 lignes
-  lcd.print("CHRONO-E7   V1.1");                        // Ecran d'accueil
+  pinMode(brocheBp, INPUT_PULLUP);                      // Configure la broche du bouton comme entrée avec résistance pull-up interne
+  etatBp = digitalRead(brocheBp);
+  if (etatBp == LOW) {					// Mode réglages. Si bouton appuyé lors de la mise sous tension, alors...
+    modeReglages = true;				// Mode réglages. Mémorisation du passage en mode réglages
+    lcd.print(" J.LEAUTE 2024");			// Mode réglages. Splash screen
+    lcd.setCursor(0, 1);
+    lcd.print(" MODE REGLAGES");
+    delay(1500);					// Mode réglages. Affichage pendant 1,5 seconde
+  }
+  else {						// Si le mode réglages n'est pas sélectionné, alors..
+  lcd.print("CHRONO-E7   V1.2");                        // Splash screen
   lcd.setCursor(0, 1);
   lcd.print("Charge bat: ");
   delay(50);                                            // Attendre la stabilisation du module step-up 3.7V-5V
@@ -79,15 +92,34 @@ void setup() {
   lcd.print("TPS DE VOL 00:00");
   lcd.setCursor(0, 1);
   lcd.print("MOTEUR --- 00:00");
-  pinMode(brocheBp, INPUT_PULLUP);                      // Configure la broche du bouton comme entrée avec résistance pull-up interne
 
   pinMode(ppmRx, INPUT);                                // Initialisation de la broche n°10 comme entrée
   impulsInit = pulseIn(ppmRx, HIGH);                    // Mesure de l'impulsion initiale
 
   pinMode(brocheBuzzer, OUTPUT);                        // Définit le pin du buzzer comme sortie
+  }
 }
 
 void loop() {
+  if (modeReglages == true) {				// Mode réglages. Si le mode réglages est sélectionné, alors...
+    impulsCourant = pulseIn(ppmRx, HIGH);		// Mode réglages. Mesure de la largeur de l'impulsion
+    pinMode(analogIn,INPUT);				// Mode réglages. Initialise le mode INPUT à la broche d'entrée analogique analogIn (A0)
+    for (byte i = 0; i < 200; i++) {			// Mode réglages. Réaliser 200 mesures de tension ...
+      int valeurBrute = analogRead(analogIn);
+      somme = somme + valeurBrute;			// Mode réglages. ... et les additionner
+    }
+    float tensionBatterie = somme / 200 * vRef / 1024;	// Mode réglages. Calculer la tension moyenne de la batterie
+    lcd.setCursor(0, 0);
+    lcd.print("SIGNAL RX ");
+    lcd.print(impulsCourant);				// Mode réglages. Afficher le signal PPM
+    lcd.print("ms ");
+    lcd.setCursor(0, 1);
+    lcd.print("BATTERIE: ");
+    lcd.print(tensionBatterie);				// Mode réglages. Afficher la tension de l'accu
+    lcd.print("V ");
+    somme = 0;
+  }
+  else {						// Si le mode réglages n'est pas sélectionné, alors..
   // Acquisition du signal PPM
   impulsCourant = pulseIn(ppmRx, HIGH);                 // Mesure de la largeur de l'impulsion actuelle
   ecart = impulsCourant - impulsInit;                   // Calcul de l'écart avec la durée initiale
@@ -172,4 +204,5 @@ void loop() {
     }
   }
   else { lcd.setCursor(7,1); lcd.print("OFF"); digitalWrite(brocheBuzzer, LOW); } // Moteur à l'arret, buzzer éteint
+  }
 }
