@@ -68,7 +68,7 @@ void setup() {
     modeReglages = true;				// Mode réglages. Mémorisation du passage en mode réglages
     lcd.print(" J.LEAUTE 2024");			// Mode réglages. Splash screen
     lcd.setCursor(0, 1);
-    lcd.print(" MODE REGLAGES");
+    lcd.print("  MODE REGLAGE");
     delay(1500);					// Mode réglages. Affichage pendant 1,5 seconde
   }
   else {						// Si le mode réglages n'est pas sélectionné, alors..
@@ -112,7 +112,7 @@ void loop() {
     lcd.setCursor(0, 0);
     lcd.print("SIGNAL RX ");
     lcd.print(impulsCourant);				// Mode réglages. Afficher le signal PPM
-    lcd.print("ms ");
+    lcd.print("ms   ");
     lcd.setCursor(0, 1);
     lcd.print("BATTERIE: ");
     lcd.print(tensionBatterie);				// Mode réglages. Afficher la tension de l'accu
